@@ -1,151 +1,91 @@
-# Sistema de Facturación - Fuerza de Ventas
+# Backend - Sistema de Facturación
 
-Sistema completo con sincronización en tiempo real entre múltiples vendedores.
+Backend con sincronización en tiempo real usando WebSockets (Socket.io).
 
-## 🎯 Características Principales
+## 🚀 Características
 
-- ✅ **Sincronización en tiempo real** - Todos los vendedores ven los mismos datos actualizados
-- ✅ **WebSockets** - Comunicación instantánea entre dispositivos
-- ✅ **Base de datos centralizada** - Un solo punto de verdad para todos los datos
-- ✅ **PWA** - Funciona como app nativa en Android
-- ✅ **Offline-first** - Funciona sin conexión y sincroniza cuando hay internet
+- **Sincronización en tiempo real** - Todos los vendedores ven los mismos datos actualizados
+- **WebSockets** - Comunicación bidireccional instantánea
+- **API REST** - Endpoints para todas las operaciones CRUD
+- **Base de datos en memoria** - Para demo (migrar a MongoDB/PostgreSQL en producción)
 
-## 📁 Estructura del Proyecto
-
-```
-/output/
-├── backend/          # Servidor Node.js + Socket.io
-│   ├── server.js     # Servidor principal
-│   └── package.json
-│
-├── app/              # Frontend React + PWA
-│   ├── src/          # Código fuente
-│   ├── dist/         # Build para producción
-│   └── package.json
-│
-└── README.md         # Este archivo
-```
-
-## 🚀 Inicio Rápido
-
-### 1. Iniciar el Backend
+## 📦 Instalación
 
 ```bash
-cd backend
 npm install
+```
+
+## 🏃 Iniciar servidor
+
+```bash
 npm start
 ```
 
-El backend iniciará en `http://localhost:3001`
+El servidor iniciará en el puerto **3001** (o el puerto definido en la variable de entorno PORT).
 
-### 2. Iniciar el Frontend
+## 🔌 WebSocket Events
 
-```bash
-cd app
-npm install
-npm run dev
-```
+### Cliente → Servidor
+- `join` - Unirse a sala de usuario
 
-El frontend estará en `http://localhost:5173`
+### Servidor → Cliente
+- `init` - Datos iniciales al conectar
+- `update` - Actualización de datos (tipo: clientes, productos, ventas, movimientos)
+- `nueva-venta` - Notificación de nueva venta realizada
 
-## 🔐 Credenciales de Prueba
+## 🔗 API Endpoints
+
+### Autenticación
+- `POST /api/login` - Iniciar sesión
+
+### Clientes
+- `GET /api/clientes` - Obtener todos los clientes
+- `POST /api/clientes/import` - Importar clientes (bulk)
+- `POST /api/clientes` - Crear cliente
+
+### Productos
+- `GET /api/productos` - Obtener todos los productos
+- `POST /api/productos` - Crear producto
+- `PUT /api/productos/:id` - Actualizar producto
+- `DELETE /api/productos/:id` - Eliminar producto
+
+### Ventas
+- `GET /api/ventas` - Obtener todas las ventas
+- `POST /api/ventas` - Crear venta
+- `PUT /api/ventas/:id/anular` - Anular venta
+
+### Inventario
+- `GET /api/movimientos` - Obtener movimientos
+- `POST /api/movimientos` - Crear movimiento
+
+### Reportes
+- `GET /api/reportes/resumen` - Obtener resumen de ventas
+
+## 🔄 Sincronización en Tiempo Real
+
+Cuando cualquier usuario realiza una operación:
+1. El servidor actualiza la base de datos
+2. El servidor emite un evento `update` a TODOS los clientes conectados
+3. Los clientes reciben los datos actualizados automáticamente
+
+## 📝 Credenciales por defecto
 
 | Rol | Email | Contraseña |
 |-----|-------|------------|
-| **Administrador** | admin@sistema.com | admin123 |
-| **Vendedor 1** | luz@sistema.com | vendedor123 |
-| **Vendedor 2** | carlos@sistema.com | vendedor123 |
+| Admin | admin@sistema.com | admin123 |
+| Vendedor | luz@sistema.com | vendedor123 |
+| Vendedor | carlos@sistema.com | vendedor123 |
 
-## 📱 Instalación en Android
+## 🛠️ Migración a Base de Datos Real
 
-1. Abre el frontend en Chrome en tu dispositivo Android
-2. Toca el menú (⋮) → "Agregar a pantalla de inicio"
-3. La app se instalará como aplicación nativa
+Para producción, reemplazar el objeto `db` en `server.js` con:
 
-## 🔄 Cómo funciona la sincronización
+```javascript
+// MongoDB con Mongoose
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGODB_URI);
 
+// O PostgreSQL con Sequelize
+const { Sequelize } = require('sequelize');
+const sequelize = new Sequelize(process.env.DATABASE_URL);
 ```
-┌─────────────┐     WebSocket      ┌─────────────┐
-│  Vendedor 1 │ ◄────────────────► │   Backend   │
-│  (Celular)  │                    │  (Servidor) │
-└─────────────┘                    └──────┬──────┘
-                                          │
-┌─────────────┐     WebSocket           │
-│  Vendedor 2 │ ◄───────────────────────┘
-│  (Celular)  │
-└─────────────┘
-
-Cuando Vendedor 1 hace una venta:
-1. Se envía al backend
-2. El backend actualiza la base de datos
-3. El backend notifica a TODOS los vendedores conectados
-4. Los vendedores 1 y 2 ven la venta y el stock actualizado
-```
-
-## 📊 Importar Clientes
-
-1. Inicia sesión como **administrador**
-2. Ve a **Administración → Clientes**
-3. Sube tu archivo Excel con las columnas:
-   - Identificación, Cod Asesor, Asesor, NIT, Cod Cliente
-   - Cliente, Nombre Común, Contacto, Canal, Dirección
-   - Barrio, Ciudad, Telefono, Segmento, Zona, Macrozona
-   - Longitud, Latitud
-
-## 🛠️ Tecnologías
-
-### Backend
-- **Node.js** + **Express** - Servidor HTTP
-- **Socket.io** - WebSockets para tiempo real
-- **CORS** - Comunicación entre dominios
-- **UUID** - Generación de IDs únicos
-
-### Frontend
-- **React** + **TypeScript** + **Vite**
-- **Tailwind CSS** + **shadcn/ui** - Estilos
-- **Socket.io-client** - Conexión WebSocket
-- **Recharts** - Gráficos
-- **PWA** - Service Worker + Manifest
-
-## 📝 Variables de Entorno
-
-### Frontend (.env)
-```
-VITE_BACKEND_URL=http://localhost:3001
-```
-
-### Backend (variables de entorno opcionales)
-```
-PORT=3001
-```
-
-## 🌐 Despliegue en Producción
-
-### Backend
-1. Usar **Railway**, **Render** o **Heroku**
-2. Configurar variables de entorno
-3. El servidor debe estar accesible públicamente
-
-### Frontend
-1. Cambiar `VITE_BACKEND_URL` a la URL del backend en producción
-2. Ejecutar `npm run build`
-3. Subir la carpeta `dist/` a **Vercel**, **Netlify** o **GitHub Pages**
-
-## ⚠️ Notas Importantes
-
-- **Base de datos**: El backend usa almacenamiento en memoria para el demo. Para producción, migrar a MongoDB o PostgreSQL.
-- **Persistencia**: Los datos se pierden si el servidor se reinicia. En producción usar base de datos persistente.
-- **Seguridad**: Las contraseñas están en texto plano para el demo. En producción usar bcrypt.
-
-## 🆘 Soporte
-
-Si tienes problemas:
-1. Verifica que el backend esté corriendo en el puerto 3001
-2. Verifica que el frontend apunte a la URL correcta del backend
-3. Revisa la consola del navegador para errores
-4. Revisa los logs del backend
-
----
-
-**Versión:** 2.0.0 - Con sincronización en tiempo real  
-**Fecha:** Febrero 2026
