@@ -1,0 +1,7 @@
+cd /mnt/okcomputer/output/backend
+git init
+git add .
+git commit -m "Backend inicial"
+git branch -M main
+git remote add origin https://github.com/cp6034684-alt/facturacion-backend.git
+git push -u origin main
